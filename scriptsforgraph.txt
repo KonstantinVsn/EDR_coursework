@@ -1,0 +1,31 @@
+    <style>
+        .circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            font-size: 35px;
+            color: #e6f7ff;
+            line-height: 100px;
+            text-align: center;
+            background: #006699
+        }
+    </style>
+</head>
+<body>
+<div class="circle" style="position: absolute;left: 500px; top: 90px;">J</div>
+<div class="circle" style="position: absolute;left: 500px; top: 200px;">K</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
+<!-- Latest compiled and minified JavaScript -->
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="icono.min.css">
+<meta charset="UTF-8">
+<title>kuku</title>
+<meta charset="UTF-8">

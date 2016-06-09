@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+{% block graph %}
+    <p>{{ name }}</p>
+    <head>
+        <title>Animating Changes in Force Diagram</title>
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <style>
+            .node {
+                stroke: #070707;
+                stroke-width: 1.5px;
+            }
+
+            .link {
+                stroke: #999;
+                stroke-opacity: .6;
+            }
+
+            fieldset {
+                border: 0;
+                margin: 0;
+                padding: 0;
+            }
+
+            input {
+                border: none;
+                font-family: inherit;
+                font-size: inherit;
+                line-height: 1.5em;
+                margin: 0;
+                outline: none;
+                padding: 0;
+                -webkit-appearance: none;
+            }
+
+            input[type="search"] {
+                -webkit-appearance: textfield;
+                -moz-box-sizing: content-box;
+                -webkit-box-sizing: content-box;
+                box-sizing: content-box;
+            }
+
+            input[type="search"]::-webkit-search-cancel-button,
+            input[type="search"]::-webkit-search-decoration {
+                -webkit-appearance: none;
+            }
+
+            .clearfix {
+                *zoom: 1;
+            }
+
+            .clearfix:before, .clearfix:after {
+                content: "";
+                display: table;
+            }
+
+            .clearfix:after {
+                clear: both;
+            }
+
+            /* ---------- SEARCH ---------- */
+
+            #search {
+                background: #ecf0f1;
+                border-radius: 3px;
+                display: inline-block;
+                padding: 30px;
+            }
+
+            #search input {
+                float: left;
+            }
+
+            #search input[type="search"],
+            #search input[type="submit"] {
+                border-radius: 3px;
+                font-size: 17px;
+            }
+
+            #search input[type="search"] {
+                background: #fff;
+                color: #42454e;
+                min-width: 184px;
+                padding: 6px 8px;
+                margin-left: 105px;
+            }
+
+            #search input[type="submit"] {
+                background: #1bba9a;
+                color: #fff;
+                font-weight: bold;
+                margin-left: 7px;
+                padding: 6px 10px;
+            }
+
+            #search input[type="submit"]:hover {
+                background: #189e83;
+            }
+
+            #search input[type="search"]::-webkit-input-placeholder {
+                color: #ecf0f1;
+            }
+
+            #search input[type="search"]:-moz-placeholder {
+                color: #ecf0f1;
+            }
+
+            #search input[type="search"]:-ms-input-placeholder {
+                color: #ecf0f1;
+            }
+        </style>
+        <style>
+            strong {
+                font-weight: bold;
+            }
+
+            em {
+                font-style: italic;
+            }
+
+            table {
+                background: #f5f5f5;
+                border-collapse: separate;
+                box-shadow: inset 0 1px 0 #fff;
+                font-size: 12px;
+                line-height: 24px;
+                margin: 30px auto;
+                text-align: left;
+                width: 1270px;
+            }
+
+            th {
+                background: url(http://jackrugile.com/images/misc/noise-diagonal.png), linear-gradient(#777, #444);
+                border-left: 1px solid #555;
+                border-right: 1px solid #777;
+                border-top: 1px solid #555;
+                border-bottom: 1px solid #333;
+                box-shadow: inset 0 1px 0 #999;
+                color: #fff;
+                font-weight: bold;
+                padding: 10px 15px;
+                position: relative;
+                text-shadow: 0 1px 0 #000;
+            }
+
+            th:after {
+                background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, .08));
+                content: '';
+                display: block;
+                height: 25%;
+                left: 0;
+                margin: 1px 0 0 0;
+                position: absolute;
+                top: 25%;
+                width: 100%;
+            }
+
+            th:first-child {
+                border-left: 1px solid #777;
+                box-shadow: inset 1px 1px 0 #999;
+            }
+
+            th:last-child {
+                box-shadow: inset -1px 1px 0 #999;
+            }
+
+            td {
+                border-right: 1px solid #fff;
+                border-left: 1px solid #e8e8e8;
+                border-top: 1px solid #fff;
+                border-bottom: 1px solid #e8e8e8;
+                padding: 10px 15px;
+                position: relative;
+                transition: all 300ms;
+            }
+
+            td:first-child {
+                box-shadow: inset 1px 0 0 #fff;
+            }
+
+            td:last-child {
+                border-right: 1px solid #e8e8e8;
+                box-shadow: inset -1px 0 0 #fff;
+            }
+
+            tr {
+                background: url(http://jackrugile.com/images/misc/noise-diagonal.png);
+            }
+
+            tr:nth-child(odd) td {
+                background: #f1f1f1 url(http://jackrugile.com/images/misc/noise-diagonal.png);
+            }
+
+            tr:last-of-type td {
+                box-shadow: inset 0 -1px 0 #fff;
+            }
+
+            tr:last-of-type td:first-child {
+                box-shadow: inset 1px -1px 0 #fff;
+            }
+
+            tr:last-of-type td:last-child {
+                box-shadow: inset -1px -1px 0 #fff;
+            }
+
+            tbody:hover td {
+                color: transparent;
+                text-shadow: 0 0 3px #aaa;
+            }
+
+            tbody:hover tr:hover td {
+                color: #444;
+                text-shadow: 0 1px 0 #fff;
+            }
+        </style>
+        <style>
+            .button1 {
+                display: inline-block;
+                padding: 15px 25px;
+                font-size: 12px;
+                cursor: pointer;
+                text-align: center;
+                text-decoration: none;
+                outline: none;
+                color: #fff;
+                margin-left:44px;
+                background-color: #1bba9a;
+                border: none;
+                border-radius: 15px;
+                box-shadow: 0 9px #999;
+            }
+
+            .button1:hover {
+                background-color: #1bba9a;
+            }
+
+            .button1:active {
+                background-color: #1bba9a;
+                box-shadow: 0 5px #666;
+                transform: translateY(4px);
+            }
+        </style>
+    </head>
+    <div id="search">
+        <form method="post" action="/search/">
+            {% csrf_token %}
+            <fieldset class="clearfix">
+                <input type="search" name="search" value="What are you looking for?"
+                       onBlur="if(this.value=='')this.value='What are you looking for?'"
+                       onFocus="if(this.value=='What are you looking for?')this.value='' ">
+                <!-- JS because of IE support; better: placeholder="What are you looking for?" -->
+                <input type="submit" value="Search" class="button">
+            </fieldset>
+        </form>
+    </div>
+    <script class="cssdeck" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+    <button onclick="addNodes()"></button>
+    <script>
+        var graph;
+        function myGraph() {
+
+            // Add and remove elements on the graph object
+            this.addNode = function (id) {
+                nodes.push({"id": id});
+                update();
+            };
+
+            this.removeNode = function (id) {
+                var i = 0;
+                var n = findNode(id);
+                while (i < links.length) {
+                    if ((links[i]['source'] == n) || (links[i]['target'] == n)) {
+                        links.splice(i, 1);
+                    }
+                    else i++;
+                }
+                nodes.splice(findNodeIndex(id), 1);
+                update();
+            };
+
+            this.removeLink = function (source, target) {
+                for (var i = 0; i < links.length; i++) {
+                    if (links[i].source.id == source && links[i].target.id == target) {
+                        links.splice(i, 1);
+                        break;
+                    }
+                }
+                update();
+            };
+
+            this.removeallLinks = function () {
+                links.splice(0, links.length);
+                update();
+            };
+
+            this.removeAllNodes = function () {
+                nodes.splice(0, links.length);
+                update();
+            };
+
+            this.addLink = function (source, target, value) {
+                links.push({"source": findNode(source), "target": findNode(target), "value": value});
+                update();
+            };
+
+            var findNode = function (id) {
+                for (var i in nodes) {
+                    if (nodes[i]["id"] === id) return nodes[i];
+                }
+                ;
+            };
+
+            var findNodeIndex = function (id) {
+                for (var i = 0; i < nodes.length; i++) {
+                    if (nodes[i].id == id) {
+                        return i;
+                    }
+                }
+                ;
+            };
+
+            // set up the D3 visualisation in the specified element
+            var w = 1340,
+                    h = 550;
+
+            var color = d3.scale.category10();
+
+            var force = d3.layout.force()
+                    .charge(-120)
+                    .linkDistance(100)
+                    .size([w, h]);
+
+
+            var vis = d3.select("body")
+                    .append("svg:svg")
+                    .attr("width", w)
+                    .attr("height", h)
+                    .attr("id", "svg")
+                    .attr("pointer-events", "all")
+                    .attr("viewBox", "0 0 " + w + " " + h)
+                    .attr("perserveAspectRatio", "xMinYMid")
+                    .append('svg:g');
+
+
+            var nodes = force.nodes(),
+                    links = force.links();
+
+            var update = function () {
+                var link = vis.selectAll("line")
+                        .data(links, function (d) {
+                            return d.source.id + "-" + d.target.id;
+                        });
+
+                link.enter().append("line")
+                        .attr("id", function (d) {
+                            return d.source.id + "-" + d.target.id;
+                        })
+                        .attr("stroke-width", function (d) {
+                            return d.value / 10;
+                        })
+                        .attr("class", "link");
+                link.append("title")
+                        .text(function (d) {
+                            return d.value;
+                        });
+                link.exit().remove();
+
+                var node = vis.selectAll("g.node")
+                        .data(nodes, function (d) {
+                            return d.id;
+                        });
+
+                var nodeEnter = node.enter().append("g")
+                        .attr("class", "node")
+                        .call(force.drag);
+
+                nodeEnter.append("svg:circle")
+                        .attr("r", 18)
+                        .attr("id", function (d) {
+                            return "Node;" + d.id;
+                        })
+                        .attr("class", "nodeStrokeClass")
+                        .attr("fill", function (d) {
+                            return color(d.id);
+                        });
+
+                nodeEnter.append("svg:text")
+                        .attr("class", "textClass")
+                        .attr("x", 20)
+                        .attr("y", ".31em")
+                        .text(function (d) {
+                            return d.id;
+                        });
+
+                node.exit().remove();
+
+                force.on("tick", function () {
+
+                    node.attr("transform", function (d) {
+                        return "translate(" + d.x + "," + d.y + ")";
+                    });
+
+                    link.attr("x1", function (d) {
+                        return d.source.x;
+                    })
+                            .attr("y1", function (d) {
+                                return d.source.y;
+                            })
+                            .attr("x2", function (d) {
+                                return d.target.x;
+                            })
+                            .attr("y2", function (d) {
+                                return d.target.y;
+                            });
+                });
+
+                // Restart the force layout.
+                force
+                        .gravity(.1)
+                        .charge(-80000)
+                        .friction(0)
+                        .linkDistance(function (d) {
+                            return d.value * 10
+                        })
+                        .size([w, h])
+                        .start();
+            };
+
+
+            // Make it all go
+            update();
+        }
+
+        function drawGraph() {
+            graph = new myGraph("#svgdiv");
+            if ("{{ mainPerson }}" != "")
+                graph.addNode("{{ mainPerson }}");
+            {% for i in companies %}
+                graph.addNode("{{ i }}");
+            {% endfor %}
+            {% for i in companies %}
+                graph.addLink("{{ mainPerson }}", "{{ i }}", '20');
+            {% endfor %}
+
+
+            keepNodesOnTop();
+
+        }
+
+        drawGraph();
+
+        // because of the way the network is created, nodes are created first, and links second,
+        // so the lines were on top of the nodes, this just reorders the DOM to put the svg:g on top
+        function keepNodesOnTop() {
+            $(".nodeStrokeClass").each(function (index) {
+                var gnode = this.parentNode;
+                gnode.parentNode.appendChild(gnode);
+            });
+        }
+        function addNodes() {
+            d3.select("svg")
+                    .remove();
+            drawGraph();
+        }
+
+
+    </script>
+    <a href="/addtomap/">
+        <button class="button1" type="submit">Show on map</button>
+    </a>
+    {% if "" in mainPerson %}
+
+        <table>
+            <thead>
+            <tr>
+                <th>Main person</th>
+                <th>Name company</th>
+                <th>Address</th>
+                <th>Occupation</th>
+            </tr>
+            </thead>
+            <tbody>{% for i in info %}
+                <tr>
+
+                    <td><strong>{{ i.name }}</strong></td>
+                    <td>{{ i.mainPerson }}</td>
+                    <td>{{ i.name }}</td>
+                    <td>{{ i.address }}</td>
+
+                </tr>{% endfor %}
+
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}
